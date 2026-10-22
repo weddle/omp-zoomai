@@ -24,7 +24,7 @@ You can't just point omp at Zoom, and you can't add a new judgment dialect from 
 So pointing `openai-decisions` straight at `https://api.zoom.us/v2/aiservices` would:
 - post to `…/decisions` instead of `…/decisions/decide` (404, which `test/omp-native-judge.test.ts` shows);
 - send more than 10 questions;
-- record 0 tokens, because Zoom reports `input_units`, so the session cost ledger would read $0;
+- record 0 tokens, because Zoom reports `input_units`, so the session cost ledger would be wrong;
 - fail on any choice or score answer that comes back without `confidence`;
 - never set `enable_image_input`.
 
@@ -44,11 +44,11 @@ The shim binds 127.0.0.1 only and is `unref`'d. It never logs request bodies or 
 ## Alternatives considered
 | Option | Verdict |
 |---|---|
-| A. Extension plus shim (built here) | **Recommended now.** No fork, project-local, uses omp's own retry, auth rotation, cache and ledger. |
+| A. Extension plus shim (built here) | **The delivered approach.** No fork, project-local, uses omp's own retry, auth rotation, cache and ledger. |
 | B. `models.yml` pointing `openai-decisions` at Zoom | Doesn't work (the route, cap, usage and confidence gaps above). It would also need a global `models.yml` change. |
 | C. ~~Upstream PR adding a `zoom-decisions` JudgmentWire (~150 lines plus a KDL cap of 10)~~ | Not pursued; kept only as a design note. The extension plus shim is the delivered path. |
 | D. Extension `registerTool("zoom_judge")` | Bypasses the judge role chain, cache and ledger. Rejected. |
 | E. Fork omp | Unnecessary. |
 
 ## Chat or "provider" models
-Zoom AI Services publishes **no chat/completions LLM endpoint** (see `zoom-ai-api-map.md`). The only text LLM is inside the Voice Agent realtime WebSocket. A `streamSimple` provider could in principle wrap it, but I don't recommend that: it's a voice product, its billing is unpublished, the docs conflict on its model, and text-only use is undocumented. **The only Zoom models that fit omp are the two Decisions judge models.**
+Zoom AI Services publishes **no chat/completions LLM endpoint** (see `zoom-ai-api-map.md`). The only text LLM is inside the Voice Agent realtime WebSocket. A `streamSimple` provider could in principle wrap it, but it's a voice product, the docs conflict on its model, and text-only use is undocumented, so it's out of scope. **The only Zoom models that fit omp are the two Decisions judge models.**

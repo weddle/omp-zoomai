@@ -8,7 +8,6 @@ Sources:
 [GUIDE] https://developers.zoom.us/docs/ai-services/decisions/ ·
 [FAST] https://developers.zoom.us/docs/ai-services/decisions/fast-mode/ ·
 [AUTH] https://developers.zoom.us/docs/ai-services/auth/ ·
-[PRICE] https://www.zoom.com/en/products/ai-services/decisions-api/ ·
 [BLOG] https://www.zoom.com/en/ai-research/introducing-zoom-decisions-apis-accurate-speech-reliable-action/ (published Oct 19, 2026) ·
 [RATE] https://developers.zoom.us/docs/api/rate-limits/ ·
 [TOS] https://www.zoom.com/en/trust/terms/ §10 ·
@@ -59,28 +58,22 @@ Sources:
 - **unknown**: context window, per-question token limit, payload size, and image count, size or MIME limits. [FAST] only says requests "exceeding the service's input, payload, question, choice, level, or image limits are rejected", without numbers. The placeholder `contextWindow: 64000` in the extension is **INFER**.
 - **SEEN** [GUIDE]: "Image-specific safety guardrails are not available." The extension keeps images off unless `ZOOM_AI_IMAGES=1`.
 
-## 6. Pricing
-- **SEEN** [PRICE][BLOG]: `zoom-decisions` is **$0.042 / 1M input tokens** and `zoom-decisions-pro` is **$0.10 / 1M input tokens**, paid with prepaid credits. [BLOG]: the same as Jev and Microsoft-Decision-1 (standard), and the same as OpenAI Decisions (pro). Output isn't priced. Usage reports `output_units` as a question count.
-- **SEEN** [REF]: `zoom-decisions-pro` "does not require additional entitlement". [GUIDE]: "Model access and pricing depend on your AI Services entitlement."
-- **unknown**: free trial size, minimum purchase, and whether cached input tokens are discounted (`cached_input_tokens` is reported, but there's no price for it).
-- **Measured 2026-10-20** per-question cost: not linear. One request with N copies of a question billed 351 (N=1), 896 (N=2), 3,695 (N=5) and 12,240 (N=10) input_units, about 1,321 units per extra question, most of it reported as cached. For comparison, Jev is about 24 tokens per extra question and OpenAI Decisions about 158.
-
-## 7. Rate limits
+## 6. Rate limits
 - **SEEN** [REF]: rate-limit label `LIGHT`, plus "Account-level rate limits and workload quotas apply". 429 comes with `Retry-After` "when applicable". 503 carries `metadata.retry_after_seconds` [FAST].
 - **SEEN** [RATE]: LIGHT is 4/s and 6,000/day on Free, 30/s on Pro, 80/s on Business+. "The Zoom Build account uses the Pro rate limit."
 - **unknown**: Decisions-specific "workload quotas" and concurrency caps.
 
-## 8. Latency
+## 7. Latency
 - **SEEN** [BLOG]: "117 ms median latency" in the vendor's own Oct 15 test, as published in the blog post. Competitors were measured through OpenRouter, so the network paths differ.
 - **INFER**: unverified from our network. For reference, measured here: Jev 0.10 s mean, OpenAI Decisions 0.20 s mean.
 
-## 9. Accuracy claims (vendor, unverified)
+## 8. Accuracy claims (vendor, unverified)
 - **SEEN** [BLOG], vendor-published results:
   - Five text benchmarks (including JevBench, RAGTruth, JudgeBench, ContractNLI): Pro averaged 83.9%, standard 81.3%. Both beat Jev, OpenAI Decisions and Microsoft-Decision-1.
   - Four image benchmarks: Pro 86.0%, Jev 86.3%, OpenAI 80.2%.
 - **INFER**: these are vendor benchmarks. See the README's calibration summary for an independent 52-case check.
 
-## 10. Data handling
+## 9. Data handling
 - **SEEN** [TOS §10.2]: "Zoom does not use any of your audio, video, chat, screen sharing, attachments or other communications-like Customer Content … to train Zoom or third-party artificial intelligence models." Customer Content includes resulting "outputs".
 - **SEEN** [WP] (AI whitepaper): retention follows the "associated Zoom service". Third-party model providers in Zoom's federated approach are under zero-data-retention terms, with trust-and-safety exceptions.
 - **SEEN** [PORTAL]: AES-256 at rest, TLS 1.2/1.3 in transit, SOC 2 Type II, HIPAA with a BAA, and an on-prem option.
@@ -91,8 +84,8 @@ Sources:
   - which models are behind the tiers.
 - **INFER**, suggested policy: treat it like OpenAI Decisions. Don't send secrets or private personal data in `input` (the CLI has a secret tripwire). Keep work and personal data on their own keys.
 
-## 11. The other AI Services in omp terms
+## 10. The other AI Services in omp terms
 | Service | omp fit |
 |---|---|
-| Voice Agent (WS, OpenAI Realtime vocabulary, function tools, `output_modalities` text or audio) [REF][VA] | Not a chat provider. The default model conflicts: [REF] says `gpt-5.6-luna`, [VA] says built-in `gemma-4`. Pricing unknown. Skip. |
+| Voice Agent (WS, OpenAI Realtime vocabulary, function tools, `output_modalities` text or audio) [REF][VA] | Not a chat provider. The default model conflicts: [REF] says `gpt-5.6-luna`, [VA] says built-in `gemma-4`. Out of scope. |
 | Summarizer / Speech Summarization / Translator / Scribe | Task APIs, not models. They could be omp tools later (out of scope). |

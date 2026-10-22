@@ -103,8 +103,8 @@ retry:
   judge, so it never falls back to a prompted chat model.
 - Without them, the extension registers nothing and the role falls through to Jev, so the config is safe to
   leave in place.
-- To keep **Jev as the default** (recommended, below) and ask Zoom for a second opinion only on specific
-  questions, leave `judge: typesafe/jev-1.13.0` and call the CLI:
+- To keep `judge: typesafe/jev-1.13.0` in `config.yml` and call Zoom on specific questions on demand, use the
+  CLI:
 
 ```bash
 JUDGE_LIVE_OK=1 ZOOM_AI_API_KEY=... bun bin/judge.ts --backend zoom-decisions-pro \
@@ -126,31 +126,25 @@ Jev and OpenAI Decisions on the same set:
 | Correct on decided cases | 49/50 (2 abstain) | 49/49 (3 abstain) | **51/52** | **52/52** |
 | ECE (predicate set, 5 bins) | 0.054 | 0.014 | 0.002 | 0.001 |
 | Mean / p95 latency | 0.10 / 0.17 s | 0.20 / 0.38 s | 0.27 / 0.58 s | 0.31 / 0.90 s |
-| Cost per 1,000 single-question decisions | $0.022 | $0.030 | $0.012 | $0.028 |
 | Max questions per request | no count cap | 200 | 10 | 10 |
 
 - Both Zoom models had the best calibration of the four judges. Pro got every case right, including the one
   ambiguous routing case the others missed or abstained on.
-- The run was 116 requests (2 models × (52 gold + 6 probes)), about **$0.0045** at list price.
+- The run was 116 requests (2 models × (52 gold + 6 probes)).
 - The gold set is near ceiling (differences are 0–1 cases at n=52), so treat this as "fit for use", not a ranking.
-
-**Recommendation:** keep **Jev as the default judge**: it handles many-question fan-out cheaply, while Zoom caps at
-10 questions per request and its per-question cost grows fast. Use **Zoom Decisions Pro as an independent second
-opinion** on single, high-stakes questions (about OpenAI Decisions' price, separate vendor). A judge should never
-be the final decider for sends, deletes, spend or pushes.
 
 ## Known caveats
 - **10 questions per request.** 11 or more returns HTTP 400 (`too many questions (max 10)`). The relay and CLI
-  split larger requests automatically, but each chunk is a separate billed request.
+  split larger requests automatically into separate requests.
 - **No `confidence` field.** Choice/score answers carry only `probabilities`; the relay synthesizes
   `confidence` = top probability (OMP's decoder requires it).
 - **Answers cluster near 0 or 1.** Every predicate in the gold run came back ≤0.05 or ≥0.95, so abstain gates
   tuned for Jev (0.85/0.15) never trigger. Tune thresholds per model on a harder set before relying on abstention.
 - **Default model.** A request without `model` returns `"model": "zoom-decisions"` (docs also call it
   `zoom-decisions-standard`); the relay omits `model` for the standard tier.
-- **Non-linear billing.** `input_units` grows faster than linearly with questions per request (same input, N
-  questions: 351 units at N=1, 896 at N=2, 3,695 at N=5, 12,240 at N=10; most reported as cached, and whether cached
-  tokens are discounted is undocumented). Prefer 1–3 questions per request.
+- **Non-linear `input_units`.** `input_units` grows faster than linearly with questions per request (same input,
+  N questions: 351 units at N=1, 896 at N=2, 3,695 at N=5, 12,240 at N=10; most reported as cached). Fewer
+  questions per request keep `input_units` lower.
 - No version pinning: the model ids are service tiers and the implementation may change. Log `model` and
   `request_id` and re-check calibration periodically.
 - Context, payload and image limits are unpublished; `contextWindow: 64000` in the extension is a placeholder.

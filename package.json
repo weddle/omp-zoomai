@@ -1,0 +1,35 @@
+{
+  "name": "omp-zoomai",
+  "version": "0.1.1",
+  "description": "Zoom AI Services Decisions as an omp judge (extension + localhost keyless relay), plus a backend-agnostic judge CLI. No live calls by default.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Ryan Weddle",
+  "keywords": [
+    "omp",
+    "zoom",
+    "zoom-ai",
+    "provider",
+    "plugin"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weddle/omp-zoomai.git"
+  },
+  "engines": {
+    "bun": ">=1.4.2"
+  },
+  "omp": {
+    "extensions": [
+      "./extension/zoom-ai/index.ts"
+    ]
+  },
+  "bin": {
+    "omp-zoomai-judge": "bin/judge.ts"
+  },
+  "scripts": {
+    "test": "bun test",
+    "mock": "bun src/mock/mock-server.ts",
+    "judge": "bun bin/judge.ts"
+  }
+}

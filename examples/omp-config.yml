@@ -1,0 +1,9 @@
+# Example <project>/.omp/config.yml (or <agent-dir>/config.yml) for the zoom-ai judge.
+# Inert unless ZOOM_AI_ENABLE=1 and ZOOM_AI_API_KEY are set: the extension then registers nothing and the
+# judge role falls through to the next native judge (Jev).
+modelRoles:
+  judge: zoom-ai/zoom-decisions-pro   # or zoom-ai/zoom-decisions (cheaper, slightly less accurate)
+retry:
+  fallbackChains:
+    judge:
+      - typesafe/jev-1.13.0
